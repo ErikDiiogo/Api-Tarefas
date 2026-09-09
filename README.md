@@ -1,3 +1,26 @@
+# API de Tarefas — REST API
+
+API REST desenvolvida em Java com Spring Boot para gerenciamento de tarefas.
+
+## Funcionalidades
+- Criar tarefa com título, descrição, prioridade e prazo
+- Listar todas as tarefas
+- Buscar tarefa por ID
+- Atualizar tarefa existente
+- Deletar tarefa por ID
+
+## Endpoints
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | /tarefas | Criar tarefa |
+| GET | /tarefas | Listar todas |
+| GET | /tarefas/{id} | Buscar por ID |
+| PUT | /tarefas/{id} | Atualizar tarefa |
+| DELETE | /tarefas/{id} | Deletar tarefa |
+
+## Exemplo de requisição
+
 ### Criar tarefa
 ```json
 POST /tarefas
