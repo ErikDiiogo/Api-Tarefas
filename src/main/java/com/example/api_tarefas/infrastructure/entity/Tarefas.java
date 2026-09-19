@@ -15,15 +15,14 @@ import lombok.Setter;
 
 @Getter 
 @Setter 
-@AllArgsConstructor 
 @NoArgsConstructor 
+@AllArgsConstructor 
 @Entity 
-@Table(name = "tarefas")
-public class Tarefas {
+@Table (name = "tarefas")
+public class Tarefas{
     
     @Id 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String titulo;
