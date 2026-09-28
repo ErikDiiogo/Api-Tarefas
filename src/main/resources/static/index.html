@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerenciador de Tarefas</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans, system-ui); background: var(--surface-0, #f5f5f5); color: var(--text-primary, #1a1a1a); min-height: 100vh; }
+.container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+.header { text-align: center; margin-bottom: 2rem; }
+.header h1 { font-size: 24px; font-weight: 500; margin-bottom: 0.5rem; }
+.header p { color: var(--text-secondary, #666); font-size: 14px; }
+.card { background: var(--surface-2, #fff); border: 0.5px solid var(--border, #e0e0e0); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+.card h2 { font-size: 16px; font-weight: 500; margin-bottom: 1rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 13px; color: var(--text-secondary, #666); margin-bottom: 4px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+input, select, textarea { width: 100%; padding: 8px 12px; border: 0.5px solid var(--border-strong, #ccc); border-radius: var(--radius, 8px); font-size: 14px; background: var(--surface-2, #fff); color: var(--text-primary, #1a1a1a); }
+textarea { resize: vertical; min-height: 80px; }
+.btn { padding: 8px 16px; border-radius: var(--radius, 8px); font-size: 14px; cursor: pointer; border: 0.5px solid var(--border-strong, #ccc); background: transparent; color: var(--text-primary, #1a1a1a); transition: background 0.1s; }
+.btn:hover { background: var(--surface-1, #f5f5f5); }
+.btn-primary { background: #1a73e8; color: white; border-color: #1a73e8; }
+.btn-primary:hover { background: #1557b0; }
+.btn-danger { color: #c62828; border-color: #f48fb1; }
+.btn-danger:hover { background: #ffebee; }
+.btn-success { color: #2e7d32; border-color: #a5d6a7; }
+.btn-success:hover { background: #e8f5e9; }
+.btn-link { border: none; color: #1a73e8; cursor: pointer; background: none; font-size: 14px; padding: 0; text-decoration: underline; }
+.alert { padding: 12px; border-radius: var(--radius, 8px); font-size: 14px; margin-bottom: 1rem; }
+.alert-danger { background: #ffebee; color: #c62828; border: 0.5px solid #f48fb1; }
+.alert-success { background: #e8f5e9; color: #2e7d32; border: 0.5px solid #a5d6a7; }
+.token-info { font-size: 12px; color: #999; word-break: break-all; margin-top: 8px; padding: 8px; background: #f5f5f5; border-radius: 8px; display: none; }
+.task-list { display: flex; flex-direction: column; gap: 8px; }
+.task-item { background: #fff; border: 0.5px solid #e0e0e0; border-radius: 12px; padding: 1rem; display: flex; align-items: flex-start; gap: 12px; }
+.task-item.concluida { opacity: 0.6; }
+.task-item.concluida .task-titulo { text-decoration: line-through; }
+.task-info { flex: 1; }
+.task-titulo { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+.task-descricao { font-size: 13px; color: #666; margin-bottom: 8px; }
+.task-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; }
+.badge-alta { background: #ffebee; color: #c62828; }
+.badge-media { background: #fff8e1; color: #f57f17; }
+.badge-baixa { background: #e8f5e9; color: #2e7d32; }
+.badge-pendente { background: #f5f5f5; color: #666; }
+.badge-emandamento { background: #e3f2fd; color: #1565c0; }
+.badge-concluida { background: #e8f5e9; color: #2e7d32; }
+.task-actions { display: flex; gap: 8px; }
+.empty-state { text-align: center; padding: 2rem; color: #999; }
+.section-title { font-size: 14px; font-weight: 500; color: #666; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
+.config-note { font-size: 12px; color: #666; margin-top: 1rem; padding: 12px; background: #f5f5f5; border-radius: 8px; border-left: 3px solid #1a73e8; }
+.tabs { display: flex; gap: 8px; margin-bottom: 1rem; border-bottom: 0.5px solid #e0e0e0; padding-bottom: 8px; }
+.tab { padding: 6px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; border: none; background: none; color: #666; }
+.tab.active { background: #e3f2fd; color: #1565c0; font-weight: 500; }
+.user-info { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Gerenciador de Tarefas</h1>
+    <p>Conectado à sua API Spring Boot</p>
+  </div>
+
+  <div class="config-note">
+    <strong>Configuração:</strong> Certifique-se que sua API está rodando em <code>http://localhost:8080</code> e que o CORS está habilitado.
+  </div>
+
+  <div class="card" id="auth-card" style="margin-top: 1rem;">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('login')">Entrar</button>
+      <button class="tab" onclick="showTab('register')">Criar conta</button>
+    </div>
+
+    <div id="tab-login">
+      <h2>Login</h2>
+      <div id="auth-alert"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="username" value="username" placeholder="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" value="password" placeholder="password">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="login()">Entrar</button>
+      <div class="token-info" id="token-info"></div>
+    </div>
+
+    <div id="tab-register" style="display: none;">
+      <h2>Criar conta</h2>
+      <div id="register-alert"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="reg-username" placeholder="Escolha um username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="Escolha uma senha">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="register()">Criar conta</button>
+    </div>
+  </div>
+
+  <div id="app" style="display: none;">
+    <div class="card">
+      <h2>Nova Tarefa</h2>
+      <div id="form-alert"></div>
+      <div class="form-group">
+        <label>Título</label>
+        <input type="text" id="titulo" placeholder="Ex: Estudar Spring Boot">
+      </div>
+      <div class="form-group">
+        <label>Descrição</label>
+        <textarea id="descricao" placeholder="Detalhes da tarefa..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prioridade</label>
+          <select id="prioridade">
+            <option value="ALTA">Alta</option>
+            <option value="MEDIA" selected>Média</option>
+            <option value="BAIXA">Baixa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="status">
+            <option value="PENDENTE" selected>Pendente</option>
+            <option value="EM_ANDAMENTO">Em andamento</option>
+            <option value="CONCLUIDA">Concluída</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Data limite</label>
+        <input type="date" id="dataLimite">
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button class="btn btn-primary" onclick="criarTarefa()">Criar tarefa</button>
+        <button class="btn btn-danger" onclick="logout()">Sair</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <span>Tarefas</span>
+        <button class="btn" onclick="carregarTarefas()" style="font-size: 12px; padding: 4px 10px;">Atualizar</button>
+      </div>
+      <div id="tarefas-alert"></div>
+      <div id="task-list" class="task-list">
+        <div class="empty-state">Carregando tarefas...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:8080';
+let token = '';
+
+function showTab(tab) {
+  document.getElementById('tab-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('tab-register').style.display = tab === 'register' ? 'block' : 'none';
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+  });
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => el.innerHTML = '', 4000);
+}
+
+async function login() {
+  const u = document.getElementById('username').value;
+  const p = document.getElementById('password').value;
+  if (!u || !p) { showAlert('auth-alert', 'Preencha todos os campos.', 'danger'); return; }
+  try {
+    const r = await fetch(`${API}/authenticate`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Basic ' + btoa(u + ':' + p) }
+    });
+    if (!r.ok) throw new Error('Credenciais inválidas');
+    token = await r.text();
+    document.getElementById('auth-card').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    carregarTarefas();
+  } catch (e) {
+    showAlert('auth-alert', 'Erro: ' + e.message + '. Verifique se a API está rodando.', 'danger');
+  }
+}
+
+async function register() {
+  const u = document.getElementById('reg-username').value.trim();
+  const p = document.getElementById('reg-password').value;
+  if (!u || !p) { showAlert('register-alert', 'Preencha todos os campos.', 'danger'); return; }
+  try {
+    const r = await fetch(`${API}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    if (!r.ok) throw new Error('Erro ao criar conta');
+    showAlert('register-alert', 'Conta criada! Faça login.', 'success');
+    document.getElementById('reg-username').value = '';
+    document.getElementById('reg-password').value = '';
+    setTimeout(() => showTab('login'), 1500);
+  } catch (e) {
+    showAlert('register-alert', 'Erro: ' + e.message + '. Verifique se o endpoint /register existe na API.', 'danger');
+  }
+}
+
+function logout() {
+  token = '';
+  document.getElementById('auth-card').style.display = 'block';
+  document.getElementById('app').style.display = 'none';
+}
+
+async function carregarTarefas() {
+  try {
+    const r = await fetch(`${API}/tarefas`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!r.ok) throw new Error('Erro ao carregar');
+    renderTarefas(await r.json());
+  } catch (e) {
+    document.getElementById('task-list').innerHTML = `<div class="empty-state">Erro ao carregar tarefas.</div>`;
+  }
+}
+
+function renderTarefas(tarefas) {
+  const list = document.getElementById('task-list');
+  if (!tarefas.length) { list.innerHTML = '<div class="empty-state">Nenhuma tarefa cadastrada.</div>'; return; }
+  const statusClass = s => s === 'EM_ANDAMENTO' ? 'emandamento' : (s || '').toLowerCase();
+  list.innerHTML = tarefas.map(t => `
+    <div class="task-item ${t.status === 'CONCLUIDA' ? 'concluida' : ''}">
+      <div class="task-info">
+        <div class="task-titulo">${t.titulo}</div>
+        ${t.descricao ? `<div class="task-descricao">${t.descricao}</div>` : ''}
+        <div class="task-meta">
+          <span class="badge badge-${(t.prioridade||'').toLowerCase()}">${t.prioridade||''}</span>
+          <span class="badge badge-${statusClass(t.status)}">${t.status||''}</span>
+          ${t.dataLimite ? `<span class="badge" style="background:#f5f5f5;color:#999">Limite: ${t.dataLimite}</span>` : ''}
+        </div>
+      </div>
+      <div class="task-actions">
+        ${t.status !== 'CONCLUIDA' ? `<button class="btn btn-success" onclick='concluirTarefa(${t.id}, ${JSON.stringify(t)})'>Concluir</button>` : ''}
+        <button class="btn btn-danger" onclick="deletarTarefa(${t.id})">Excluir</button>
+      </div>
+    </div>`).join('');
+}
+
+async function criarTarefa() {
+  const titulo = document.getElementById('titulo').value.trim();
+  if (!titulo) { showAlert('form-alert', 'Informe o título.', 'danger'); return; }
+  try {
+    const r = await fetch(`${API}/tarefas`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, descricao: document.getElementById('descricao').value, prioridade: document.getElementById('prioridade').value, status: document.getElementById('status').value, dataLimite: document.getElementById('dataLimite').value || null })
+    });
+    if (!r.ok) throw new Error('Erro ao criar');
+    document.getElementById('titulo').value = '';
+    document.getElementById('descricao').value = '';
+    document.getElementById('dataLimite').value = '';
+    showAlert('form-alert', 'Tarefa criada!', 'success');
+    carregarTarefas();
+  } catch (e) { showAlert('form-alert', 'Erro ao criar tarefa.', 'danger'); }
+}
+
+async function deletarTarefa(id) {
+  if (!confirm('Confirma a exclusão?')) return;
+  try {
+    await fetch(`${API}/tarefas/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+    showAlert('tarefas-alert', 'Tarefa excluída!', 'success');
+    carregarTarefas();
+  } catch (e) { showAlert('tarefas-alert', 'Erro ao excluir.', 'danger'); }
+}
+
+async function concluirTarefa(id, tarefa) {
+  try {
+    const body = { ...tarefa, status: 'CONCLUIDA' };
+    delete body.id;
+    await fetch(`${API}/tarefas/${id}`, { method: 'PUT', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    showAlert('tarefas-alert', 'Tarefa concluída!', 'success');
+    carregarTarefas();
+  } catch (e) { showAlert('tarefas-alert', 'Erro ao concluir.', 'danger'); }
+}
+</script>
+</body>
+</html>

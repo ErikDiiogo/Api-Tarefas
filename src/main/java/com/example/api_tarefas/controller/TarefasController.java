@@ -1,6 +1,7 @@
 package com.example.api_tarefas.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,13 +25,13 @@ public class TarefasController {
     private final TarefasService tarefasService;
 
     @PostMapping 
-    public ResponseEntity<Tarefas> salvarTarefas(@RequestBody Tarefas tarefas){
-        return ResponseEntity.accepted().body(tarefasService.salvarTarefas(tarefas));
+    public ResponseEntity<Tarefas> salvarTarefas(@RequestBody Tarefas tarefas, Authentication authentication){
+        return ResponseEntity.accepted().body(tarefasService.salvarTarefas(tarefas, authentication.getName()));
     }
 
     @GetMapping 
-    public ResponseEntity<List<Tarefas>> listarTarefas(){
-        return ResponseEntity.ok().body(tarefasService.buscarTarefas());
+    public ResponseEntity<List<Tarefas>> listarTarefas(Authentication authentication){
+        return ResponseEntity.ok().body(tarefasService.buscarTarefas(authentication.getName()));
     }
 
     @GetMapping("/{id}")

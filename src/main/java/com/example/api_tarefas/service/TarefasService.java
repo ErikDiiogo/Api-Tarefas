@@ -15,13 +15,14 @@ public class TarefasService {
 
     private final TarefasRepository tarefasRepository;
 
-    public Tarefas salvarTarefas(Tarefas tarefas){
+    public Tarefas salvarTarefas(Tarefas tarefas, String username){
+        tarefas.setUsername(username);
         tarefas.setDataCriacao(LocalDateTime.now());
         return tarefasRepository.save(tarefas);
     }
 
-    public List<Tarefas> buscarTarefas(){
-        return tarefasRepository.findAll();
+    public List<Tarefas> buscarTarefas(String username){
+        return tarefasRepository.findByUsername(username);
     }
 
     public Optional<Tarefas> buscarTarefasId(Long id){

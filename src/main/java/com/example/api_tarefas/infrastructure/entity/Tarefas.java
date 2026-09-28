@@ -25,6 +25,8 @@ public class Tarefas{
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String username;
+    
     private String titulo;
 
     private String descricao;

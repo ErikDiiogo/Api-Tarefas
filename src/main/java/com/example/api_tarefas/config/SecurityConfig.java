@@ -36,7 +36,7 @@ private RSAPrivateKey priv;
     SecurityFilterChain filterChain(HttpSecurity http)throws Exception{
         http.csrf(csrf -> csrf.disable())
            .authorizeHttpRequests(
-               auth -> auth.requestMatchers("/authenticate").permitAll()
+               auth -> auth.requestMatchers("/authenticate", "/register").permitAll()
                .anyRequest().authenticated())
            .httpBasic(Customizer.withDefaults())
            .oauth2ResourceServer(
